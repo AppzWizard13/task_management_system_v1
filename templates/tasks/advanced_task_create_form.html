@@ -1,0 +1,124 @@
+{% extends "index.html" %}
+{% load django_bootstrap5 %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-12 col-md-10">
+    <div class="card shadow-lg">
+      <div class="card-body p-4">
+        <h3 class="card-title mb-4">{{ page_title }}</h3>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% bootstrap_form form %}
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{{ success_url }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">{{ submit_button }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Function to populate checkboxes
+    function populateCheckboxes(fieldId, data) {
+        var container = $('#id_' + fieldId).parent();
+        
+        // Find the div containing checkboxes (created by CheckboxSelectMultiple)
+        var checkboxContainer = container.find('div').first();
+        checkboxContainer.empty();
+        
+        if (data.length === 0) {
+            checkboxContainer.html('<p class="text-muted small">No options available</p>');
+            return;
+        }
+        
+        $.each(data, function(index, item) {
+            var displayText = item.name || item.username;
+            
+            // For users, create full name display
+            if (item.first_name || item.last_name) {
+                displayText = (item.first_name || '') + ' ' + (item.last_name || '');
+                displayText = displayText.trim() || item.username;
+            }
+            
+            var checkboxHtml = `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" 
+                           name="${fieldId}" value="${item.id}" 
+                           id="id_${fieldId}_${item.id}">
+                    <label class="form-check-label" for="id_${fieldId}_${item.id}">
+                        ${displayText}
+                    </label>
+                </div>
+            `;
+            
+            checkboxContainer.append(checkboxHtml);
+        });
+    }
+    
+    // Function to clear checkboxes
+    function clearCheckboxes(fieldId) {
+        var container = $('#id_' + fieldId).parent();
+        var checkboxContainer = container.find('div').first();
+        checkboxContainer.html('<p class="text-muted small">Select organization first</p>');
+    }
+    
+    // When organization dropdown changes
+    $('#id_organization').on('change', function() {
+        var orgId = $(this).val();
+        
+        if (orgId) {
+            // Show loading
+            clearCheckboxes('departments');
+            clearCheckboxes('assigned_users');
+            clearCheckboxes('viewers');
+            
+            $('#id_departments').parent().find('div').first().html('<p class="text-info small">Loading...</p>');
+            $('#id_assigned_users').parent().find('div').first().html('<p class="text-info small">Loading...</p>');
+            $('#id_viewers').parent().find('div').first().html('<p class="text-info small">Loading...</p>');
+            
+            // Fetch filtered data
+            $.ajax({
+                url: '/tasks/api/organization/' + orgId + '/data/',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    populateCheckboxes('departments', response.departments);
+                    populateCheckboxes('assigned_users', response.users);
+                    populateCheckboxes('viewers', response.users);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    alert('Error loading data. Please try again.');
+                    clearCheckboxes('departments');
+                    clearCheckboxes('assigned_users');
+                    clearCheckboxes('viewers');
+                }
+            });
+        } else {
+            clearCheckboxes('departments');
+            clearCheckboxes('assigned_users');
+            clearCheckboxes('viewers');
+        }
+    });
+});
+</script>
+
+<style>
+#id_departments, #id_assigned_users, #id_viewers {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    border-radius: 0.25rem;
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

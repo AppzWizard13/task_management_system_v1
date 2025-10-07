@@ -1,0 +1,83 @@
+{% extends "index.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}Complete Task - {{ task.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    <div class="card shadow-lg">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Complete Task: {{ task.name }}</h4>
+        <small>{{ task.organization.name }}</small>
+      </div>
+      
+      <div class="card-body">
+        <div class="alert alert-info mb-4">
+          <strong>Description:</strong> {{ task.description|default:"No description" }}
+        </div>
+        
+        {% if has_submitted %}
+        <div class="alert alert-warning">
+          <i class="ti ti-alert-circle"></i> You have already submitted outputs for this task. Submitting again will update your previous submission.
+        </div>
+        {% endif %}
+        
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <!-- Manual form rendering to handle file fields specially -->
+          {% for field in form %}
+            <div class="mb-4">
+              <label class="form-label fw-semibold">
+                {{ field.label }}
+                {% if field.field.required %}
+                <span class="text-danger">*</span>
+                {% endif %}
+              </label>
+              
+              <!-- Check if this is a file field and has existing file -->
+              {% if 'file' in field.name %}
+                {% for output in existing_outputs %}
+                  {% if output.output_field.field_type == 'file' %}
+                    {% if output.value_file %}
+                      <div class="mb-2 p-2 bg-light border rounded">
+                        <small class="text-muted d-block">Current file:</small>
+                        <a href="{{ output.value_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                          <i class="ti ti-file"></i> {{ output.value_file.name|slice:"13:" }}
+                        </a>
+                        <small class="text-muted d-block mt-1">Upload a new file to replace it</small>
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+              
+              {{ field }}
+              
+              {% if field.help_text %}
+              <small class="form-text text-muted d-block mt-1">{{ field.help_text }}</small>
+              {% endif %}
+              
+              {% if field.errors %}
+              <div class="invalid-feedback d-block">
+                {{ field.errors }}
+              </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+          
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-secondary">
+              <i class="ti ti-arrow-left"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="ti ti-check"></i> {% if has_submitted %}Update{% else %}Submit{% endif %} Output
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -15,21 +15,28 @@
             {% if edit_url %}
             <a href="{% url edit_url object.pk %}" class="btn btn-sm btn-warning">Edit</a>
             {% endif %}
+            {% if list_url %}
             <a href="{% url list_url %}" class="btn btn-sm btn-secondary">Back to List</a>
+            {% endif %}
           </div>
         </div>
         
         <div class="table-responsive">
           <table class="table table-borderless">
             <tbody>
+              {% if object.name %}
               <tr>
                 <th class="text-muted" style="width: 30%;">Name</th>
-                <td>{{ object.name|default:"-" }}</td>
+                <td>{{ object.name }}</td>
               </tr>
+              {% endif %}
+              
+              {% if object.description %}
               <tr>
                 <th class="text-muted" style="width: 30%;">Description</th>
-                <td>{{ object.description|default:"-" }}</td>
+                <td>{{ object.description|linebreaksbr }}</td>
               </tr>
+              {% endif %}
               
               {% if permissions %}
               <tr>

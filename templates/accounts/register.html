@@ -1,0 +1,77 @@
+{% load static %}
+{% load django_bootstrap5 %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register</title>
+  <link rel="shortcut icon" type="image/png" href="{% static 'assets/images/logos/favicon.png' %}" />
+  <link rel="stylesheet" href="{% static 'assets/css/styles.min.css' %}" />
+  {% bootstrap_css %}
+</head>
+
+<body>
+  <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+    data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+    <div
+      class="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
+      <div class="d-flex align-items-center justify-content-center w-100">
+        <div class="row justify-content-center w-100">
+          <div class="col-md-8 col-lg-6 col-xxl-3">
+            <div class="card mb-0 shadow-lg">
+              <div class="card-body">
+                <div class="text-nowrap logo-img text-center d-block py-3 w-100">
+                  <i class="ti ti-clipboard-check text-primary me-2" style="font-size: 32px;"></i>
+                  <div>
+                    <div class="fw-bold text-dark" style="font-size: 18px; line-height: 1.2;">Task Management System</div>
+                  </div>
+                </div>
+                <h4 class="text-center mb-3">Create an Account</h4>
+
+                {% if form.errors %}
+                  <div class="alert alert-danger">
+                    <ul class="mb-0">
+                      {% for field in form %}
+                        {% for error in field.errors %}
+                          <li>{{ error }}</li>
+                        {% endfor %}
+                      {% endfor %}
+                      {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+
+                <!-- Django Register Form -->
+                <form method="post" action="{% url 'register' %}">
+                  {% csrf_token %}
+                  {% bootstrap_form form %}
+
+                  <button type="submit" class="btn btn-primary w-100 py-2 fs-5 rounded-2 mt-2">
+                    Register
+                  </button>
+                </form>
+
+                <div class="d-flex align-items-center justify-content-center mt-4">
+                  <p class="fs-6 mb-0 fw-bold text-muted">Already have an account?</p>
+                  <a class="text-primary fw-bold ms-2" href="{% url 'login' %}">Login here</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="{% static 'assets/libs/jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+  {% bootstrap_javascript %}
+</body>
+
+</html>

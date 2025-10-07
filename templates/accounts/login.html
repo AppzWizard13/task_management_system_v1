@@ -1,0 +1,74 @@
+{% load static %}
+{% load django_bootstrap5 %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login | Modernize</title>
+  <link rel="shortcut icon" type="image/png" href="{% static 'assets/images/logos/favicon.png' %}" />
+  <link rel="stylesheet" href="{% static 'assets/css/styles.min.css' %}" />
+  {% bootstrap_css %}
+</head>
+
+<body>
+  <!-- Body Wrapper -->
+  <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6"
+    data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+    <div
+      class="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
+      <div class="d-flex align-items-center justify-content-center w-100">
+        <div class="row justify-content-center w-100">
+          <div class="col-md-8 col-lg-6 col-xxl-3">
+            <div class="card mb-0 shadow-lg">
+              <div class="card-body">
+                <div class="text-nowrap logo-img text-center d-block py-3 w-100">
+                  <i class="ti ti-clipboard-check text-primary me-2" style="font-size: 32px;"></i>
+                  <div>
+                    <div class="fw-bold text-dark" style="font-size: 18px; line-height: 1.2;">Task Management System</div>
+                  </div>
+                </div>
+                <p class="text-center mb-4 text-muted">Welcome back! Please login to your account.</p>
+
+                <!-- Django Login Form -->
+                <form method="post" action="{% url 'login' %}">
+                  {% csrf_token %}
+                  {% bootstrap_form form %}
+                  
+                  <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="form-check">
+                      <input class="form-check-input primary" type="checkbox" value="" id="rememberMe" checked>
+                      <label class="form-check-label text-dark" for="rememberMe">
+                        Remember me
+                      </label>
+                    </div>
+                  
+                  </div>
+
+                  <button type="submit" class="btn btn-primary w-100 py-2 fs-5 rounded-2">
+                    Sign In
+                  </button>
+                </form>
+
+                <div class="d-flex align-items-center justify-content-center mt-4">
+                  <p class="fs-6 mb-0 fw-bold text-muted">Don't have an account?</p>
+                  <a class="text-primary fw-bold ms-2" href="{% url 'register' %}">Register here</a>
+                </div>
+              </div>
+            </div>
+            <p class="text-center mt-3 text-muted small">© 2025 Modernize Theme</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="{% static 'assets/libs/jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+  {% bootstrap_javascript %}
+</body>
+
+</html>

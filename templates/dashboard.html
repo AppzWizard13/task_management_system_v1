@@ -1,0 +1,354 @@
+{% extends "index.html" %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Statistics Cards -->
+<div class="row">
+  <div class="col-lg-3 col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div>
+            <h4 class="fw-semibold mb-1">{{ total_organizations }}</h4>
+            <p class="mb-0">Organizations</p>
+          </div>
+          <div class="ms-auto">
+            <span class="text-primary display-6"><i class="ti ti-building"></i></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div>
+            <h4 class="fw-semibold mb-1">{{ total_departments }}</h4>
+            <p class="mb-0">Departments</p>
+          </div>
+          <div class="ms-auto">
+            <span class="text-success display-6"><i class="ti ti-users"></i></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div>
+            <h4 class="fw-semibold mb-1">{{ total_users }}</h4>
+            <p class="mb-0">Users</p>
+          </div>
+          <div class="ms-auto">
+            <span class="text-warning display-6"><i class="ti ti-user"></i></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div>
+            <h4 class="fw-semibold mb-1">{{ total_tasks }}</h4>
+            <p class="mb-0">Total Tasks</p>
+          </div>
+          <div class="ms-auto">
+            <span class="text-danger display-6"><i class="ti ti-clipboard-check"></i></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Organizations and Departments -->
+<div class="row">
+  <!-- My Organizations -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header bg-light py-2">
+        <h5 class="mb-0 fw-semibold">
+          <i class="ti ti-building me-2 text-primary"></i>My Organizations
+        </h5>
+      </div>
+      <div class="card-body p-0">
+        <div style="max-height: 400px; overflow-y: auto; padding: 1rem;">
+          {% for org in user_organizations %}
+          <div class="d-flex align-items-center p-2 mb-2 border rounded bg-light">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; min-width: 35px;">
+              <i class="ti ti-building" style="font-size: 16px;"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-0 fw-semibold" style="font-size: 14px;">{{ org.name }}</h6>
+              <small class="text-muted" style="font-size: 11px;">{{ org.description|truncatewords:6|default:"No description" }}</small>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center py-4 text-muted">
+            <i class="ti ti-building-off d-block mb-2" style="font-size: 28px;"></i>
+            <p class="mb-0" style="font-size: 13px;">No organizations assigned</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Departments -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header bg-light py-2">
+        <h5 class="mb-0 fw-semibold">
+          <i class="ti ti-users me-2 text-success"></i>My Departments
+        </h5>
+      </div>
+      <div class="card-body p-0">
+        <div style="max-height: 400px; overflow-y: auto; padding: 1rem;">
+          {% for dept in user_departments %}
+          <div class="d-flex align-items-center p-2 mb-2 border rounded bg-light">
+            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; min-width: 35px;">
+              <i class="ti ti-users" style="font-size: 16px;"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-0 fw-semibold" style="font-size: 14px;">{{ dept.name }}</h6>
+              <small class="text-muted" style="font-size: 11px;">{{ dept.organization.name }}</small>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center py-4 text-muted">
+            <i class="ti ti-users-off d-block mb-2" style="font-size: 28px;"></i>
+            <p class="mb-0" style="font-size: 13px;">No departments assigned</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-3">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Filter Tasks</h5>
+        <form method="get" class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Organization</label>
+            <select name="organization" class="form-select">
+              <option value="">All Organizations</option>
+              {% for org in organizations %}
+              <option value="{{ org.id }}" {% if selected_org == org.id %}selected{% endif %}>{{ org.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Department</label>
+            <select name="department" class="form-select">
+              <option value="">All Departments</option>
+              {% for dept in departments %}
+              <option value="{{ dept.id }}" {% if selected_dept == dept.id %}selected{% endif %}>{{ dept.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">User</label>
+            <select name="user" class="form-select">
+              <option value="">All Users</option>
+              {% for u in users %}
+              <option value="{{ u.id }}" {% if selected_user == u.id %}selected{% endif %}>{{ u.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">&nbsp;</label>
+            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- My Assigned Tasks Timeline -->
+  <div class="col-lg-4 d-flex align-items-stretch">
+    <div class="card w-100">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="card-title fw-semibold mb-0">My Assigned Tasks</h5>
+          <a href="{% url 'tasks:my_assigned_tasks' %}" class="btn btn-sm btn-outline-primary">
+            View All
+          </a>
+        </div>
+        
+        <ul class="timeline-widget mb-0 position-relative mb-n5">
+          {% for task in my_assigned_tasks %}
+          <li class="timeline-item d-flex position-relative overflow-hidden">
+            <div class="timeline-time text-dark flex-shrink-0 text-end">{{ task.created_at|date:"H:i" }}</div>
+            <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+              <span class="timeline-badge border-2 border border-primary flex-shrink-0 my-8"></span>
+              <span class="timeline-badge-border d-block flex-shrink-0"></span>
+            </div>
+            <div class="timeline-desc fs-3 text-dark mt-n1">
+              <a href="{% url 'tasks:task_detail' task.pk %}" class="fw-semibold">{{ task.name }}</a>
+              <br><small>{{ task.organization.name }}</small>
+            </div>
+          </li>
+          {% empty %}
+          <li class="timeline-item d-flex position-relative overflow-hidden">
+            <div class="timeline-desc fs-3 text-muted">No assigned tasks</div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Tasks Table -->
+  <div class="col-lg-8 d-flex align-items-stretch">
+    <div class="card w-100">
+      <div class="card-body p-4">
+        <h5 class="card-title fw-semibold mb-4">Recent Tasks</h5>
+        <div class="table-responsive">
+          <table class="table text-nowrap mb-0 align-middle">
+            <thead class="text-dark fs-4">
+              <tr>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">#</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Task Name</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Organization</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Due Date</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Actions</h6>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in recent_tasks %}
+              <tr>
+                <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ forloop.counter }}</h6></td>
+                <td class="border-bottom-0">
+                  <h6 class="fw-semibold mb-1">{{ task.name }}</h6>
+                  <span class="fw-normal">{{ task.description|truncatewords:5 }}</span>
+                </td>
+                <td class="border-bottom-0">
+                  <p class="mb-0 fw-normal">{{ task.organization.name }}</p>
+                </td>
+                <td class="border-bottom-0">
+                  {% if task.due_date %}
+                  <span class="badge bg-warning rounded-3 fw-semibold">{{ task.due_date|date:"M d, Y" }}</span>
+                  {% else %}
+                  <span class="badge bg-secondary rounded-3 fw-semibold">No Due Date</span>
+                  {% endif %}
+                </td>
+                <td class="border-bottom-0">
+                  <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted">No tasks available</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- All Tasks Table -->
+<div class="row">
+  <div class="col-lg-12 d-flex align-items-stretch">
+    <div class="card w-100">
+      <div class="card-body p-4">
+        <h5 class="card-title fw-semibold mb-4">All Accessible Tasks</h5>
+        <div class="table-responsive">
+          <table class="table text-nowrap mb-0 align-middle">
+            <thead class="text-dark fs-4">
+              <tr>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">#</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Task Name</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Organization</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Departments</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Due Date</h6>
+                </th>
+                <th class="border-bottom-0">
+                  <h6 class="fw-semibold mb-0">Actions</h6>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in tasks %}
+              <tr>
+                <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ forloop.counter }}</h6></td>
+                <td class="border-bottom-0">
+                  <h6 class="fw-semibold mb-1">{{ task.name }}</h6>
+                  <span class="fw-normal text-muted">{{ task.description|truncatewords:10 }}</span>
+                </td>
+                <td class="border-bottom-0">
+                  <p class="mb-0 fw-normal">{{ task.organization.name }}</p>
+                </td>
+                <td class="border-bottom-0">
+                  <p class="mb-0 fw-normal">
+                    {% for dept in task.departments.all %}
+                      {{ dept.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                      <span class="text-muted">No departments</span>
+                    {% endfor %}
+                  </p>
+                </td>
+                <td class="border-bottom-0">
+                  {% if task.due_date %}
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary rounded-3 fw-semibold">{{ task.due_date|date:"M d" }}</span>
+                  </div>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td class="border-bottom-0">
+                  <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">No tasks found</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
