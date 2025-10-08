@@ -11,13 +11,12 @@ from django.contrib import admin
 from django.urls import include, path
 
 from accounts.views import DashboardView
-from core.views import serve_protected_file
-
+from core.views import serve_protected_file, Custom404View  # ✅ import CBV
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('select2/', include('django_select2.urls')),
-    path('', include('accounts.urls')),
+    path('accounts/', include('accounts.urls')),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('organizations/', include('organizations.urls')),
     path('tasks/', include('tasks.urls')),
@@ -34,3 +33,6 @@ if settings.DEBUG:
         settings.STATIC_URL,
         document_root=settings.STATIC_ROOT
     )
+
+# Register custom error handler at bottom
+handler404 = Custom404View.as_view()

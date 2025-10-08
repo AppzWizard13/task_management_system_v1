@@ -25,17 +25,14 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-bcrq#7ocs$4pba%7*v_vn!#c%4+p(1((3_*3$lejw-wx$47et6'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
-
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
-
 INSTALLED_APPS = [
     'daphne',  
     'django.contrib.admin',
@@ -67,16 +64,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
-# ✅ Change from WSGI to ASGI
 ASGI_APPLICATION = 'task_management_system.asgi.application'
 
-# ✅ Add Channels configuration
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('redis', 6379)],  # 'redis' is the service name in docker-compose
+            "hosts": [('redis', 6379)], 
         },
     },
 }
@@ -101,7 +95,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'task_management_system.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -123,7 +116,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -142,39 +134,34 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
 
-# ✅ Add this line:
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# (optional but recommended)
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  # only if you have local static files in 'static/'
+    BASE_DIR / "static", 
 ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-# Media files (User uploaded files) - ADD THIS
+# Media files 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# File Upload Settings - ADD THIS
+# File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
 FILE_UPLOAD_PERMISSIONS = 0o644
@@ -183,8 +170,6 @@ FILE_UPLOAD_PERMISSIONS = 0o644
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'accounts:login'
@@ -192,7 +177,6 @@ LOGIN_REDIRECT_URL = 'accounts:dashboard'
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'  
-
 
 TIME_ZONE = 'Asia/Kolkata' 
 

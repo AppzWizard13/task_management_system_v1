@@ -17,7 +17,6 @@ django-environ==0.12.0
 django-rest-framework-nested==0.0.1
 django-select2==8.4.1
 djangorestframework==3.16.1
-djangorestframework_simplejwt==5.5.1
 gunicorn==23.0.0
 hyperlink==21.0.0
 idna==3.10

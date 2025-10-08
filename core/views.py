@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from tasks.models import TaskOutput
+from django.views import View
+from django.shortcuts import render
 
 
 @login_required
@@ -81,3 +83,14 @@ def has_file_access(user, task_output):
         return True
 
     return False
+
+class Custom404View(View):
+    template_name = '404.html'
+
+    def get(self, request, *args, **kwargs):
+        # You can add custom logic here (logging, suggestions, etc.)
+        context = {
+            'title': 'Page Not Found',
+            'message': 'Oops! The page you are looking for does not exist.',
+        }
+        return render(request, self.template_name, context, status=404)

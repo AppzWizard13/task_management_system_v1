@@ -1,5 +1,4 @@
 #!/bin/sh
-
 if [ "$DATABASE" = "postgres" ]; then
     echo "Waiting for PostgreSQL at $POSTGRES_HOST:$POSTGRES_PORT..."
 
@@ -18,6 +17,9 @@ fi
 
 echo "Applying database migrations"
 python manage.py migrate --noinput
+
+echo "Creating admin user if not exists"
+python manage.py create_admin
 
 echo "Collecting static files"
 python manage.py collectstatic --noinput
