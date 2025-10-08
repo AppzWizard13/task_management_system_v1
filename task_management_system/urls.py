@@ -1,28 +1,36 @@
-"""
-URL configuration for task_management_system project.
+"""URL configuration for task_management_system project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+This module defines the main URL routing for the task management system,
+including admin, authentication, organizations, tasks, and protected file
+serving endpoints.
 """
+
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
+
+from accounts.views import DashboardView
+from core.views import serve_protected_file
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('select2/', include('django_select2.urls')),  # Add this line
-    path('organizations/', include('organizations.urls')),
+    path('select2/', include('django_select2.urls')),
     path('', include('accounts.urls')),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('organizations/', include('organizations.urls')),
     path('tasks/', include('tasks.urls')),
     path('task-chat/', include('task_chat.urls')),
-
+    path(
+        'protected/file/<int:output_id>/',
+        serve_protected_file,
+        name='serve_protected_file'
+    ),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.STATIC_URL,
+        document_root=settings.STATIC_ROOT
+    )

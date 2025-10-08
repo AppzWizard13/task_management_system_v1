@@ -4,20 +4,92 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-lg-12 col-md-10">
+  <div class="col-lg-10">
     <div class="card shadow-lg">
       <div class="card-body p-4">
         <h3 class="card-title mb-4">{{ page_title }}</h3>
         <form method="post" novalidate>
           {% csrf_token %}
-          {% bootstrap_form form %}
+          
+          {# Render name and description normally #}
+          {% for field in form %}
+            {% if field.name != 'permissions' %}
+              <div class="mb-3">
+                {% bootstrap_field field %}
+              </div>
+            {% endif %}
+          {% endfor %}
+          
+          {# Custom rendering for permissions field #}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              {{ form.permissions.label }}
+              {% if form.permissions.field.required %}
+              <span class="text-danger">*</span>
+              {% endif %}
+            </label>
+            
+            {% if form.permissions.help_text %}
+            <small class="form-text text-muted d-block mb-2">
+              {{ form.permissions.help_text }}
+            </small>
+            {% endif %}
+            
+            {# Scrollable permission list #}
+            <div class="border rounded p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+              <div class="row">
+                {% for checkbox in form.permissions %}
+                  <div class="col-md-6 mb-2">
+                    <div class="form-check">
+                      {{ checkbox.tag }}
+                      <label class="form-check-label ms-2" for="{{ checkbox.id_for_label }}">
+                        {{ checkbox.choice_label }}
+                      </label>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            
+            {% if form.permissions.errors %}
+            <div class="invalid-feedback d-block">
+              {{ form.permissions.errors }}
+            </div>
+            {% endif %}
+          </div>
+          
           <div class="d-flex justify-content-between mt-4">
-            <a href="{{ success_url }}" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary">{{ submit_button }}</button>
+            <a href="{{ success_url }}" class="btn btn-secondary">
+              <i class="ti ti-arrow-left"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="ti ti-check"></i> {{ submit_button }}
+            </button>
           </div>
         </form>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+  /* Better checkbox styling */
+  .form-check-input[type="checkbox"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    cursor: pointer;
+  }
+  
+  .form-check-label {
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+  }
+  
+  /* Hover effect for better UX */
+  .form-check:hover {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+  }
+</style>
 {% endblock %}

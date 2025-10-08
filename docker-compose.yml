@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000  # ✅ Keep runserver for static files
+    command: python manage.py runserver 0.0.0.0:8000  
     volumes:
       - .:/app
     ports:
@@ -19,7 +19,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
-  daphne:  # ✅ Add separate Daphne service for WebSockets
+  daphne:  
     build: .
     command: daphne -b 0.0.0.0 -p 8001 task_management_system.asgi:application
     volumes:

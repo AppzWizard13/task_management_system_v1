@@ -9,6 +9,82 @@
   <title>{% block title %}Task Management System{% endblock %}</title>
   <link rel="shortcut icon" type="image/png" href="{% static 'assets/images/logos/favicon.png' %}" />
   <link rel="stylesheet" href="{% static 'assets/css/styles.min.css' %}" />
+  
+  <style>
+    /* Toast notification styles */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 300px;
+      max-width: 400px;
+    }
+    
+    .custom-toast {
+      margin-bottom: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+    
+    .custom-toast.hiding {
+      animation: slideOut 0.3s ease-in;
+    }
+    
+    .toast-header {
+      border-radius: 8px 8px 0 0;
+      font-weight: 600;
+    }
+    
+    .toast-body {
+      padding: 15px;
+      font-size: 14px;
+    }
+    
+    /* Color variants */
+    .toast-success .toast-header {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .toast-error .toast-header {
+      background-color: #dc3545;
+      color: white;
+    }
+    
+    .toast-warning .toast-header {
+      background-color: #ffc107;
+      color: #212529;
+    }
+    
+    .toast-info .toast-header {
+      background-color: #17a2b8;
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
@@ -20,7 +96,7 @@
       <!-- Sidebar scroll-->
       <div>
         <div class="brand-logo d-flex align-items-center justify-content-between">
-          <a href="{% url 'dashboard' %}" class="text-nowrap logo-img text-decoration-none d-flex align-items-center">
+          <a href="{% url 'accounts:dashboard' %}" class="text-nowrap logo-img text-decoration-none d-flex align-items-center">
             <i class="ti ti-clipboard-check text-primary me-2" style="font-size: 32px;"></i>
             <div>
               <div class="fw-bold text-dark" style="font-size: 18px; line-height: 1.2;">Task Management</div>
@@ -39,7 +115,7 @@
               <span class="hide-menu">Home</span>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="{% url 'dashboard' %}" aria-expanded="false">
+              <a class="sidebar-link" href="{% url 'accounts:dashboard' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-layout-dashboard"></i>
                 </span>
@@ -66,7 +142,7 @@
             </li>
 
             <li class="sidebar-item">
-              <a class="sidebar-link" href="{% url 'user_list' %}" aria-expanded="false">
+              <a class="sidebar-link" href="{% url 'accounts:user_list' %}" aria-expanded="false">
                 <span><i class="ti ti-users"></i></span>
                 <span class="hide-menu">Users</span>
               </a>
@@ -126,79 +202,108 @@
     <!--  Main wrapper -->
     <div class="body-wrapper">
       <!--  Header Start -->
-
-
-<header class="app-header">
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <ul class="navbar-nav">
-      <li class="nav-item d-block d-xl-none">
-        <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
-          <i class="ti ti-menu-2"></i>
-        </a>
-      </li>
-    </ul>
-    <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
-      <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            <img src="{% static 'assets/images/profile/user-1.jpg' %}" alt="" width="35" height="35" class="rounded-circle">
-          </a>
-          <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
-            <div class="message-body">
-              <div class="px-3 py-2">
-                <p class="mb-0 fs-3 fw-semibold">{{ request.user.username }}</p>
-                <small class="text-muted d-block">{{ request.user.email }}</small>
-                {% if request.user.user_org_roles.exists %}
-                <small class="text-primary d-block mt-1">
-                  {% for user_role in request.user.user_org_roles.all %}
-                    {{ user_role.role.name }} - {{ user_role.organization.name }}{% if not forloop.last %}, {% endif %}
-                  {% endfor %}
-                </small>
-                {% endif %}
-              </div>
-              <hr class="my-2">
-              <a href="{% url 'tasks:my_assigned_tasks' %}" class="d-flex align-items-center gap-2 dropdown-item">
-                <i class="ti ti-list-check fs-6"></i>
-                <p class="mb-0 fs-3">My Tasks</p>
+      <header class="app-header">
+        <nav class="navbar navbar-expand-lg navbar-light">
+          <ul class="navbar-nav">
+            <li class="nav-item d-block d-xl-none">
+              <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
+                <i class="ti ti-menu-2"></i>
               </a>
-              <form method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-primary mx-3 mt-2 d-block w-80">Logout</button>
-              </form>
-            </div>
+            </li>
+          </ul>
+          <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
+            <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+              <li class="nav-item dropdown">
+                <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  <img src="{% static 'assets/images/profile/user-1.jpg' %}" alt="" width="35" height="35" class="rounded-circle">
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
+                  <div class="message-body">
+                    <div class="px-3 py-2">
+                      <p class="mb-0 fs-3 fw-semibold">{{ request.user.username }}</p>
+                      <small class="text-muted d-block">{{ request.user.email }}</small>
+                      {% if request.user.user_org_roles.exists %}
+                      <small class="text-primary d-block mt-1">
+                        {% for user_role in request.user.user_org_roles.all %}
+                          {{ user_role.role.name }} - {{ user_role.organization.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                      </small>
+                      {% endif %}
+                    </div>
+                    <hr class="my-2">
+                    <a href="{% url 'tasks:my_assigned_tasks' %}" class="d-flex align-items-center gap-2 dropdown-item">
+                      <i class="ti ti-list-check fs-6"></i>
+                      <p class="mb-0 fs-3">My Tasks</p>
+                    </a>
+                    <form method="post" action="{% url 'accounts:logout' %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-primary mx-3 mt-2 d-block w-80">Logout</button>
+                    </form>
+                  </div>
+                </div>
+              </li>
+            </ul>
           </div>
-        </li>
-      </ul>
-    </div>
-  </nav>
-</header>
-
-
-
-
-
-
-
-
-
-
-
-
-
+        </nav>
+      </header>
       <!--  Header End -->
-      <div class="container-fluid">
-      {% block content %}
+      
+      <!-- Toast Container for Messages -->
+      <div class="toast-container" id="toastContainer">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="toast custom-toast toast-{{ message.tags }} show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+              <div class="toast-header">
+                <i class="ti ti-{{ message.tags|default:'info' }}-circle me-2"></i>
+                <strong class="me-auto">
+                  {% if message.tags == 'success' %}Success
+                  {% elif message.tags == 'error' %}Error
+                  {% elif message.tags == 'warning' %}Warning
+                  {% else %}Info{% endif %}
+                </strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body">
+                {{ message }}
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
 
-      {% endblock %}
+      <div class="container-fluid">
+        {% block content %}
+        {% endblock %}
       </div>
     </div>
   </div>
+  
   <script src="{% static 'assets/libs/jquery/dist/jquery.min.js' %}"></script>
   <script src="{% static 'assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'assets/js/sidebarmenu.js' %}"></script>
   <script src="{% static 'assets/js/app.min.js' %}"></script>
   <script src="{% static 'assets/libs/simplebar/dist/simplebar.js' %}"></script>
+  
+  <script>
+    // Auto-hide toasts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+      const toastElList = document.querySelectorAll('.toast');
+      toastElList.forEach(function(toastEl) {
+        const toast = new bootstrap.Toast(toastEl, {
+          autohide: true,
+          delay: 5000
+        });
+        toast.show();
+        
+        // Add hiding animation before removal
+        setTimeout(function() {
+          toastEl.classList.add('hiding');
+        }, 4700);
+      });
+    });
+  </script>
+  
   {% block extra_js %}{% endblock %}
 </body>
 

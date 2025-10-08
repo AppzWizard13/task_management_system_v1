@@ -46,9 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_bootstrap5',
-    'channels',  # ✅ Add this
+    'channels',  
     'django_select2',
 
+    'core',
     'organizations',
     'accounts',
     'tasks',
@@ -169,16 +170,30 @@ STATICFILES_DIRS = [
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
+# Media files (User uploaded files) - ADD THIS
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# File Upload Settings - ADD THIS
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+FILE_UPLOAD_PERMISSIONS = 0o644
+
+# Security Headers
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'accounts:dashboard'
+LOGOUT_REDIRECT_URL = 'accounts:login'
 
-LOGIN_REDIRECT_URL = '/dashboard/'  # or the named URL pattern using reverse_lazy in views
+AUTH_USER_MODEL = 'accounts.CustomUser'  
 
 
-
-AUTH_USER_MODEL = 'accounts.CustomUser'  # ✅ Add if you have custom user
-
-
-TIME_ZONE = 'Asia/Kolkata'  # ✅ Set to IST
+TIME_ZONE = 'Asia/Kolkata' 
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

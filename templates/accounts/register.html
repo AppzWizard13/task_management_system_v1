@@ -47,7 +47,7 @@
                 {% endif %}
 
                 <!-- Django Register Form -->
-                <form method="post" action="{% url 'register' %}">
+                <form method="post" action="{% url 'accounts:register' %}">
                   {% csrf_token %}
                   {% bootstrap_form form %}
 
@@ -58,7 +58,7 @@
 
                 <div class="d-flex align-items-center justify-content-center mt-4">
                   <p class="fs-6 mb-0 fw-bold text-muted">Already have an account?</p>
-                  <a class="text-primary fw-bold ms-2" href="{% url 'login' %}">Login here</a>
+                  <a class="text-primary fw-bold ms-2" href="{% url 'accounts:login' %}">Login here</a>
                 </div>
               </div>
             </div>

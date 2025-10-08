@@ -1,6 +1,7 @@
 {% extends "index.html" %}
 {% load django_bootstrap5 %}
 {% load static %}
+{% load permission_tags %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -12,11 +13,17 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="card-title fw-semibold mb-0">{{ page_title }} Details</h5>
           <div>
-            {% if edit_url %}
-            <a href="{% url edit_url object.pk %}" class="btn btn-sm btn-warning">Edit</a>
+            {% if edit_url and can_edit %}
+              {% if request.user|has_permission:can_edit %}
+              <a href="{% url edit_url object.pk %}" class="btn btn-sm btn-warning">
+                <i class="ti ti-edit"></i> Edit
+              </a>
+              {% endif %}
             {% endif %}
             {% if list_url %}
-            <a href="{% url list_url %}" class="btn btn-sm btn-secondary">Back to List</a>
+            <a href="{% url list_url %}" class="btn btn-sm btn-secondary">
+              <i class="ti ti-arrow-left"></i> Back to List
+            </a>
             {% endif %}
           </div>
         </div>
@@ -27,31 +34,30 @@
               {% if name %}
               <tr>
                 <th class="text-muted" style="width: 30%;">Name</th>
-                <td>{{ name }}</td>
+                <td class="fw-semibold">{{ name }}</td>
               </tr>
               {% endif %}
               
               {% if description %}
               <tr>
                 <th class="text-muted" style="width: 30%;">Description</th>
-                <td>{{ description|linebreaksbr }}</td>
+                <td>{{ description|linebreaksbr|default:"No description provided" }}</td>
               </tr>
               {% endif %}
 
               {% if organization %}
               <tr>
                 <th class="text-muted" style="width: 30%;">Organization</th>
-                <td>{{ organization|linebreaksbr }}</td>
+                <td>{{ organization }}</td>
               </tr>
               {% endif %}
 
               {% if department %}
               <tr>
                 <th class="text-muted" style="width: 30%;">Department</th>
-                <td>{{ department|linebreaksbr }}</td>
+                <td>{{ department }}</td>
               </tr>
               {% endif %}
-
               
               {% if permissions %}
               <tr>

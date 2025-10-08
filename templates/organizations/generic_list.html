@@ -1,8 +1,8 @@
 {% extends "index.html" %}
 {% load django_bootstrap5 %}
 {% load static %}
-{% load filter_extras %} {# A custom filter explained below to get attr dynamically #}
-
+{% load filter_extras %}
+{% load permission_tags %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -12,7 +12,15 @@
     <div class="card w-100">
       <div class="card-body p-4">
         <h5 class="card-title fw-semibold mb-4">{{ page_title }}</h5>
-        <a href="{% url add_url %}" class="btn btn-primary mb-4">Add {{ item_name }}</a>
+        
+        {% if add_url and can_add %}
+          {% if request.user|has_permission:can_add %}
+          <a href="{% url add_url %}" class="btn btn-primary mb-4">
+            <i class="ti ti-plus"></i> Add {{ item_name }}
+          </a>
+          {% endif %}
+        {% endif %}
+        
         <div class="table-responsive">
           <table class="table text-nowrap mb-0 align-middle">
             <thead class="text-dark fs-5">
@@ -21,7 +29,11 @@
                 {% for col in table_headers %}
                 <th class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ col }}</h6></th>
                 {% endfor %}
+                
+                {# Only show Actions header if user has edit OR delete permission #}
+                {% if can_edit and request.user|has_permission:can_edit or can_delete and request.user|has_permission:can_delete %}
                 <th class="border-bottom-0"><h6 class="fw-semibold mb-0">Actions</h6></th>
+                {% endif %}
               </tr>
             </thead>
             <tbody>
@@ -30,26 +42,49 @@
                 <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{ forloop.counter }}</h6></td>
                 {% for attr in list_attrs %}
                 <td class="border-bottom-0">
-                  {% if forloop.first %}
-                  <a href="{% url detail_url obj.pk %}" class="fw-semibold text-decoration-none">{{ obj|attr:attr }}</a>
+                  {% if forloop.first and detail_url %}
+                  <a href="{% url detail_url obj.pk %}" class="fw-semibold text-decoration-none">
+                    {{ obj|attr:attr }}
+                  </a>
                   {% else %}
                   {{ obj|attr:attr }}
                   {% endif %}
                 </td>
                 {% endfor %}
+                
+                {# Only show Actions column if user has any permission #}
+                {% if can_edit and request.user|has_permission:can_edit or can_delete and request.user|has_permission:can_delete %}
                 <td class="border-bottom-0">
-                  <a href="{% url edit_url obj.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
-                  <a href="{% url delete_url obj.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                  {% if edit_url and can_edit %}
+                    {% if request.user|has_permission:can_edit %}
+                    <a href="{% url edit_url obj.pk %}" class="btn btn-sm btn-outline-warning">
+                      <i class="ti ti-edit"></i> Edit
+                    </a>
+                    {% endif %}
+                  {% endif %}
+                  
+                  {% if delete_url and can_delete %}
+                    {% if request.user|has_permission:can_delete %}
+                    <a href="{% url delete_url obj.pk %}" class="btn btn-sm btn-outline-danger">
+                      <i class="ti ti-trash"></i> Delete
+                    </a>
+                    {% endif %}
+                  {% endif %}
                 </td>
+                {% endif %}
               </tr>
               {% empty %}
               <tr>
-                <td colspan="{{ table_headers|length|add:'2' }}" class="text-center fw-normal">No {{ item_name }} found.</td>
+                <td colspan="{% if can_edit and request.user|has_permission:can_edit or can_delete and request.user|has_permission:can_delete %}{{ table_headers|length|add:'2' }}{% else %}{{ table_headers|length|add:'1' }}{% endif %}" class="text-center fw-normal py-4">
+                  <i class="ti ti-inbox" style="font-size: 48px; color: #ddd;"></i>
+                  <p class="text-muted mt-2">No {{ item_name }} found.</p>
+                </td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
+        
         {% if is_paginated %}
         <nav aria-label="Page navigation" class="mt-3">
           <ul class="pagination justify-content-center mb-0">
@@ -58,17 +93,23 @@
               <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
             </li>
             {% else %}
-            <li class="page-item disabled"><span class="page-link">&laquo; Previous</span></li>
+            <li class="page-item disabled">
+              <span class="page-link">&laquo; Previous</span>
+            </li>
             {% endif %}
+            
             <li class="page-item disabled">
               <span class="page-link">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
             </li>
+            
             {% if page_obj.has_next %}
             <li class="page-item">
               <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
             </li>
             {% else %}
-            <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+            <li class="page-item disabled">
+              <span class="page-link">Next &raquo;</span>
+            </li>
             {% endif %}
           </ul>
         </nav>

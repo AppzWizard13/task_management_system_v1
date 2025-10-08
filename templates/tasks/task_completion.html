@@ -1,3 +1,5 @@
+{# templates/tasks/task_completion.html #}
+
 {% extends "index.html" %}
 {% load django_bootstrap5 %}
 
@@ -6,73 +8,129 @@
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-lg-10">
-    <div class="card shadow-lg">
-      <div class="card-header bg-primary text-white">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white py-3">
         <h4 class="mb-0">Complete Task: {{ task.name }}</h4>
-        <small>{{ task.organization.name }}</small>
+        <small class="opacity-75">{{ task.organization.name }}</small>
       </div>
       
-      <div class="card-body">
+      <div class="card-body p-4">
         <div class="alert alert-info mb-4">
-          <strong>Description:</strong> {{ task.description|default:"No description" }}
+          <strong><i class="ti ti-info-circle me-1"></i> Description:</strong>
+          <p class="mb-0 mt-2">{{ task.description|default:"No description provided" }}</p>
         </div>
         
         {% if has_submitted %}
-        <div class="alert alert-warning">
-          <i class="ti ti-alert-circle"></i> You have already submitted outputs for this task. Submitting again will update your previous submission.
+        <div class="alert alert-warning mb-4">
+          <i class="ti ti-alert-circle me-1"></i> 
+          <strong>Note:</strong> You have already submitted outputs for this task. 
+          Submitting again will update your previous submission.
         </div>
         {% endif %}
         
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           
-          <!-- Manual form rendering to handle file fields specially -->
           {% for field in form %}
             <div class="mb-4">
-              <label class="form-label fw-semibold">
+              <label class="form-label fw-semibold mb-2">
                 {{ field.label }}
                 {% if field.field.required %}
                 <span class="text-danger">*</span>
                 {% endif %}
               </label>
               
-              <!-- Check if this is a file field and has existing file -->
-              {% if 'file' in field.name %}
-                {% for output in existing_outputs %}
-                  {% if output.output_field.field_type == 'file' %}
-                    {% if output.value_file %}
-                      <div class="mb-2 p-2 bg-light border rounded">
-                        <small class="text-muted d-block">Current file:</small>
-                        <a href="{{ output.value_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                          <i class="ti ti-file"></i> {{ output.value_file.name|slice:"13:" }}
-                        </a>
-                        <small class="text-muted d-block mt-1">Upload a new file to replace it</small>
-                      </div>
+              {# Handle file fields with existing file display #}
+              {% if field.field.widget.input_type == 'file' %}
+                {# Extract field_id from the field name (field_3 -> 3) #}
+                {% with field_id_str=field.name|slice:"6:" %}
+                  {% for key, output in existing_outputs_dict.items %}
+                    {# Convert to string for comparison #}
+                    {% if key|stringformat:"s" == field_id_str %}
+                      {% if output.value_file %}
+                        <div class="mb-3 p-3 bg-light border rounded">
+                          <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                              <small class="text-muted d-block mb-2">
+                                <i class="ti ti-paperclip me-1"></i> Current file:
+                              </small>
+                              <div class="d-flex align-items-center">
+                                <i class="ti ti-file text-primary me-2" style="font-size: 24px;"></i>
+                                <div>
+                                  <strong class="d-block">{{ output.original_filename }}</strong>
+                                  <small class="text-muted">{{ output.get_file_size_display }}</small>
+                                </div>
+                              </div>
+                            </div>
+                            <a href="{% url 'serve_protected_file' output.id %}" 
+                               class="btn btn-sm btn-primary ms-3"
+                               download>
+                              <i class="ti ti-download"></i> Download
+                            </a>
+                          </div>
+                          <div class="alert alert-info mt-3 mb-0 py-2">
+                            <small>
+                              <i class="ti ti-info-circle me-1"></i> 
+                              Upload a new file below to replace the current one
+                            </small>
+                          </div>
+                        </div>
+                      {% endif %}
                     {% endif %}
-                  {% endif %}
-                {% endfor %}
+                  {% endfor %}
+                {% endwith %}
               {% endif %}
               
-              {{ field }}
+              {# Render field based on widget type #}
+              {% if field.field.widget.input_type == 'textarea' %}
+                {{ field }}
+              {% elif field.field.widget.input_type == 'radio' %}
+                <div class="radio-group">
+                  {% for choice in field %}
+                    <div class="form-check mb-2">
+                      {{ choice.tag }}
+                      <label class="form-check-label ms-2" for="{{ choice.id_for_label }}">
+                        {{ choice.choice_label }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% elif field.field.widget.input_type == 'checkbox' %}
+                <div class="checkbox-group">
+                  {% for choice in field %}
+                    <div class="form-check mb-2">
+                      {{ choice.tag }}
+                      <label class="form-check-label ms-2" for="{{ choice.id_for_label }}">
+                        {{ choice.choice_label }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                {{ field }}
+              {% endif %}
               
               {% if field.help_text %}
-              <small class="form-text text-muted d-block mt-1">{{ field.help_text }}</small>
+              <small class="form-text text-muted d-block mt-1">
+                <i class="ti ti-help-circle me-1"></i> {{ field.help_text }}
+              </small>
               {% endif %}
               
               {% if field.errors %}
-              <div class="invalid-feedback d-block">
-                {{ field.errors }}
+              <div class="alert alert-danger mt-2 py-2 px-3 mb-0">
+                <i class="ti ti-alert-circle me-1"></i> {{ field.errors }}
               </div>
               {% endif %}
             </div>
           {% endfor %}
           
-          <div class="d-flex justify-content-between mt-4">
+          <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
             <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-secondary">
-              <i class="ti ti-arrow-left"></i> Cancel
+              <i class="ti ti-arrow-left me-1"></i> Cancel
             </a>
             <button type="submit" class="btn btn-primary">
-              <i class="ti ti-check"></i> {% if has_submitted %}Update{% else %}Submit{% endif %} Output
+              <i class="ti ti-check me-1"></i> 
+              {% if has_submitted %}Update Output{% else %}Submit Output{% endif %}
             </button>
           </div>
         </form>
@@ -80,4 +138,65 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* Radio and checkbox alignment */
+  .form-check {
+    display: flex;
+    align-items: center;
+    padding-left: 0;
+    min-height: 1.5rem;
+  }
+  
+  .form-check-input[type="radio"],
+  .form-check-input[type="checkbox"] {
+    margin: 0;
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    cursor: pointer;
+  }
+  
+  .form-check-label {
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .radio-group,
+  .checkbox-group {
+    padding: 0.5rem 0;
+  }
+  
+  /* Textarea styling */
+  textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+  }
+  
+  /* File input */
+  input[type="file"].form-control {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+  }
+  
+  /* Number input */
+  input[type="number"].form-control {
+    max-width: 300px;
+  }
+  
+  /* Remove extra spacing */
+  .form-label {
+    line-height: 1.5;
+  }
+  
+  /* Better button alignment */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+</style>
 {% endblock %}

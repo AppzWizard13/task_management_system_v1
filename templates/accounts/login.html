@@ -33,7 +33,7 @@
                 <p class="text-center mb-4 text-muted">Welcome back! Please login to your account.</p>
 
                 <!-- Django Login Form -->
-                <form method="post" action="{% url 'login' %}">
+                <form method="post" action="{% url 'accounts:login' %}">
                   {% csrf_token %}
                   {% bootstrap_form form %}
                   
@@ -54,7 +54,7 @@
 
                 <div class="d-flex align-items-center justify-content-center mt-4">
                   <p class="fs-6 mb-0 fw-bold text-muted">Don't have an account?</p>
-                  <a class="text-primary fw-bold ms-2" href="{% url 'register' %}">Register here</a>
+                  <a class="text-primary fw-bold ms-2" href="{% url 'accounts:register' %}">Register here</a>
                 </div>
               </div>
             </div>
